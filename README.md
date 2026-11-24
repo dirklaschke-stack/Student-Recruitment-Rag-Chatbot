@@ -4,7 +4,8 @@ An **n8n**-based **AI chat assistant** that answers prospective student question
 
 Instead of giving generic AI answers or forcing prospective students to dig through static web pages, this project connects an AI chat agent to program-specific documents. It brings together **20+ years of experience in higher-education student recruitment and admissions** with hands-on **workflow automation, vector search, and AI tooling**.
 
-![Student Recruitment RAG Chatbot](assets/Student_Recruitment_RAG_chatbot.png)
+[Start chatting](https://dirklaschke.app.n8n.cloud/webhook/a3171267-791f-4b3b-b499-e03979296b9c/chat)
+
 
 ---
 
