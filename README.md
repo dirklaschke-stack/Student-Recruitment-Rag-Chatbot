@@ -30,7 +30,7 @@ This workflow keeps the knowledge base current whenever new or updated program P
 5. **Remove Old Vectors Before Re-Indexing (`DeleteOldVectors` & `WaitForDelete`):** Sends a delete request to Pinecone for existing vectors matching `source_doc` in that namespace—preventing duplicate chunks when a PDF is updated—and waits safely before inserting new data[cite: 3].
 6. **Split, Embed & Store in Pinecone (`TextSplitter`, `DefaultDataLoader`, `EmbeddingsWithGemini`, `Pinecone Vector Store`):** Splits the PDF text into chunks (`900` characters with `100` overlap), creates embeddings with `models/gemini-embedding-001`, and stores them in the `campus-recruitment-hub` Pinecone index[cite: 3].
 
-[Automatic PDF & Sync Vector Database Update](/assets/Automatic_PDF_%20Sync_Vector%20Database_Update.png)
+![Automatic PDF & Sync Vector Database Update](/assets/Automatic_PDF_%20Sync_Vector%20Database_Update.png)
 
 ---
 
@@ -43,7 +43,7 @@ This workflow handles live conversations with prospective students in German or 
 3. **Search the Right Program Namespace (`search_bscbba`, `search_mscgl`, `search_mscmgt`, `search_mscbads`, `search_mba`):** The AI Agent picks the matching retrieval tool for the requested study program (or multiple tools for comparisons) and searches the corresponding Pinecone namespace using `models/gemini-embedding-001`[cite: 3].
 4. **Generate Grounded Bilingual Answers (`OpenRouter Chat Model` — `google/gemini-2.5-flash`):** Replies in the same language the student uses (German or English), sticks strictly to retrieved facts, asks a quick clarifying question if the program is unclear, and cites the source document (`source_doc`) at the end[cite: 3].
 
-[Bilingual RAG Recruitment Agent (AI Agent)](/assets/Bilingual_RAG_%20Recruitment_%20Agent_AI_Agent.png)
+![Bilingual RAG Recruitment Agent (AI Agent)](/assets/Bilingual_RAG_%20Recruitment_%20Agent_AI_Agent.png)
 
 ---
 
