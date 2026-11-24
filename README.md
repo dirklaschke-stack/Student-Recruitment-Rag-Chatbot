@@ -6,6 +6,8 @@ Instead of giving generic AI answers or forcing prospective students to dig thro
 
 [Start chatting](https://dirklaschke.app.n8n.cloud/webhook/a3171267-791f-4b3b-b499-e03979296b9c/chat)
 
+![Student Recruitment RAG Chatbot](/assets/Student_Recruitment_RAG_chatbot.png)
+
 
 ---
 
