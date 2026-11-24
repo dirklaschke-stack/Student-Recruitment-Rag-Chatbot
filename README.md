@@ -27,6 +27,9 @@ Student-Recruitment-RAG-Chatbot/
     ├── 02_ingestion_flow.png             # Step-by-step PDF sync & Pinecone update flow
     └── 03_rag_agent_chat_demo.png        # Example chat response in German or English
 
+```
+---
+
 ## Step-by-Step Walkthrough: How Both Workflows Work
 
 ### Part 1: Automatic PDF Sync & Vector Database Update (Campus Recruitment Hub)
