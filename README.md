@@ -1,10 +1,10 @@
-# Student Recruitment RAG Chatbot (Campus Recruitment Hub)
+# Student Recruitment RAG Chatbot
 
 An **n8n**-based **AI chat assistant** that answers prospective student questions in **German and English** using official study program PDFs stored in **Pinecone**.
 
 Instead of giving generic AI answers or forcing prospective students to dig through static web pages, this project connects an AI chat agent to program-specific documents. It brings together **20+ years of experience in higher-education student recruitment and admissions** with hands-on **workflow automation, vector search, and AI tooling**.
 
-![Full Workflow Overview](assets/01_full_workflow_canvas.png)
+![Student Recruitment RAG Chatbot](assets/Student_Recruitment_RAG_chatbot.png)
 
 ---
 
