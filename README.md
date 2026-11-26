@@ -51,12 +51,16 @@ student-recruitment-rag-chatbot/
 5. **Alte Vektoren vor Neu-Indexierung löschen (`DeleteOldVectors` & `WaitForDelete`):** Entfernt in Pinecone gezielt bestehende Einträge zum gleichen `source_doc` im jeweiligen Namespace, damit bei PDF-Updates keine Dubletten entstehen.
 6. **Zerlegen, Vektorisieren & Speichern (`TextSplitter`, `EmbeddingsWithGemini`, `Pinecone Vector Store`):** Teilt den Text in Abschnitte (900 Zeichen mit 100 Zeichen Überlappung), erzeugt Embeddings mit `models/gemini-embedding-001` und speichert sie im Index `campus-recruitment-hub`.
 
+![Automatischer PDF-Sync & Vektordatenbank-Update](assets/Automatic_PDF_%20Sync_Vector%20Database_Update.png)
+
 ### Teil 2: Zweisprachiger RAG-Recruitment-Agent
 
 1. **Chat-Nachricht empfangen (`When chat message received`):** Startet den Dialog über das n8n-Chat-Interface mit einer Begrüßung und Übersicht möglicher Themen (Fakten & Zahlen, Gebühren, Fristen, Curriculum, Zulassung).
 2. **Gesprächskontext halten (`Simple Memory`):** Speichert die letzten 10 Gesprächsschritte, sodass Rückfragen ohne Wiederholung des Studiengangs möglich sind.
 3. **Passenden Programmbereich durchsuchen (`search_bscbba`, `search_mscgl`, `search_mscmgt`, `search_mscbads`, `search_mba`):** Der Agent wählt je nach Frage das passende Such-Tool (oder mehrere für Programmvergleiche) und durchsucht den zugehörigen Pinecone-Namespace.
 4. **Belegte Antworten generieren (`OpenRouter Chat Model — google/gemini-2.5-flash`):** Antwortet auf Deutsch oder Englisch, bleibt strikt bei den abgerufenen Dokumenteninhalten, stellt bei unklarem Studiengang eine kurze Rückfrage und zitiert am Ende `source_doc`.
+
+![Zweisprachiger RAG-Recruitment-Agent](assets/Bilingual_RAG_%20Recruitment_%20Agent_AI_Agent.png)
 
 ## 4. Verwendete Tools & Technik
 
