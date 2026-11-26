@@ -2,22 +2,9 @@
 
 > **Zweisprachiger KI-Chat-Assistent auf Basis von n8n und Pinecone, der Fragen von Studieninteressierten auf Deutsch und Englisch verlässlich anhand offizieller Studiengangs-PDFs beantwortet.**
 
-```mermaid
-flowchart LR
-    subgraph W1["Teil 1: Automatischer PDF-Sync"]
-        A[Google Drive<br/>Neue / aktualisierte PDF] --> B[Programm-Routing<br/>BScBBA, MScGL, MScMGT,<br/>MScBADS, MBA]
-        B --> C[Alte Vektoren löschen<br/>DeleteOldVectors]
-        C --> D[Chunking & Embeddings<br/>Gemini Embedding 001]
-        D --> E[(Pinecone Index<br/>prog-* Namespaces)]
-    end
+![](assets/Student_Recruitment_RAG_chatbot.png)
 
-    subgraph W2["Teil 2: Zweisprachiger Chat-Agent"]
-        F[Chat-Anfrage<br/>DE / EN] --> G[AI Agent + Memory<br/>10 Nachrichten]
-        G --> H[Gezielte Suche<br/>search_prog-* Tool]
-        E -.-> H
-        H --> I[Antwort mit Quellenangabe<br/>Gemini 2.5 Flash]
-    end
-```
+[Click here to start a chat!](https://dirklaschke.app.n8n.cloud/webhook/a3171267-791f-4b3b-b499-e03979296b9c/chat)
 
 *Zusammenspiel aus automatisierter Wissensbasis-Aktualisierung (Teil 1) und quellengestütztem Chat-Agenten (Teil 2).*
 
