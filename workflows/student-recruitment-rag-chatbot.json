@@ -1,0 +1,967 @@
+{
+  "name": "student-recruitment-rag-chatbot",
+  "nodes": [
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "campus-recruitment-hub",
+          "mode": "list",
+          "cachedResultName": "campus-recruitment-hub"
+        },
+        "embeddingBatchSize": 201,
+        "options": {
+          "pineconeNamespace": "={{ $json.target_namespace }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.1,
+      "position": [
+        1248,
+        544
+      ],
+      "id": "54149117-964b-4a63-90fb-c36336553e11",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "cTR26SwXlWm0m4g3",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "systemMessage": "### Role\nYou are a helpful and accurate student recruitment assistant for our university's study programs.\n\n### Core Rules\n1. **Language:** Always respond in the exact language used by the prospective student (German or English).\n2. **Strict Grounding:** Rely exclusively on the facts retrieved from your program search tools. Never guess, extrapolate, or invent tuition fees, deadlines, credit points, or admission requirements. If a detail is missing from the retrieved documents, state clearly that you do not have that information and recommend contacting the admissions team.\n3. **Program Routing & Clarification:**\n   - Call the dedicated search tool matching the program asked about (or multiple tools for explicit comparisons).\n   - If the user's question does not clearly specify a study program, ask a brief clarifying question before calling a tool.\n4. **Source Transparency:** At the end of your response, briefly cite the source document name(s) (`source_doc` from metadata) used to answer the question.\n5. **Concise & Chat-Friendly Style:**\n   - Keep answers brief, scannable, and directly focused on the specific question asked (aim for 80–150 words for single-program questions, unless the user explicitly asks for a full overview or multi-program comparison).\n   - Use short bullet points for key facts (fees, duration, deadlines) instead of long narrative paragraphs.\n   - Do not dump extra details from the retrieved chunks that were not asked for. At the end, offer a brief follow-up prompt (e.g., *\"Would you like details on admission requirements or curriculum tracks?\"*)."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.8,
+      "position": [
+        672,
+        1344
+      ],
+      "id": "d42ae092-a213-4024-8150-3cd1b3fa65c1",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "public": true,
+        "initialMessages": "Hi there! 👋\n\nWanna study at KLU. I am here to assist you today? For each program, I can retrieve details such as:\n\n- Facts & Figures (e.g., degree, duration, ECTS)\n- Tuition fees\n- Application deadlines\n- Curriculum structure\n- Admission requirements\n\nPlease let me know which program you are interested in or if you have specific questions!",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chatTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -112,
+        1344
+      ],
+      "id": "11405465-0444-4a84-b942-3e499a5da8f2",
+      "name": "When chat message received",
+      "webhookId": "a3171267-791f-4b3b-b499-e03979296b9c"
+    },
+    {
+      "parameters": {
+        "model": "google/gemini-2.5-flash",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        1616
+      ],
+      "id": "d25d0c87-c965-4b11-a240-1c61deaf9cd6",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "32IVgq1wLBCs9jZs",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1RST4G39g4jepirZsFRUX45PoN-spTlFL",
+          "mode": "list",
+          "cachedResultName": "campus-recruitment-hub",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1RST4G39g4jepirZsFRUX45PoN-spTlFL"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        448
+      ],
+      "id": "ab41c3ff-3725-4f14-81d1-64bba588aeb6",
+      "name": "DriveTriggerFileCreated",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "3ZjLrwkLHGt25MXr",
+          "name": "Google Drive - Accout"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1RST4G39g4jepirZsFRUX45PoN-spTlFL",
+          "mode": "list",
+          "cachedResultName": "campus-recruitment-hub",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1RST4G39g4jepirZsFRUX45PoN-spTlFL"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        640
+      ],
+      "id": "974851f4-6351-4af3-a142-3de61b02a613",
+      "name": "DriveTriggerFileUpdated",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "3ZjLrwkLHGt25MXr",
+          "name": "Google Drive - Accout"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        96,
+        544
+      ],
+      "id": "02c47cd9-2b23-4bd6-a364-78585ea37ba3",
+      "name": "DownloadFile",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "3ZjLrwkLHGt25MXr",
+          "name": "Google Drive - Accout"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 4
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.name }}",
+                    "rightValue": "BScBBA",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    },
+                    "id": "8e3eef6e-6ad3-4bbd-bc86-2aa515cd9f6a"
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 4
+                },
+                "conditions": [
+                  {
+                    "id": "67e7b638-f904-44db-b1fd-87f00b3950b3",
+                    "leftValue": "={{ $json.name }}",
+                    "rightValue": "MScGL",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 4
+                },
+                "conditions": [
+                  {
+                    "id": "40540f05-391e-4180-8372-78c5fbcb97b2",
+                    "leftValue": "={{ $json.name }}",
+                    "rightValue": "MScMGT",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 4
+                },
+                "conditions": [
+                  {
+                    "id": "00e597d2-0c55-43cc-935c-37dab95c15d2",
+                    "leftValue": "={{ $json.name }}",
+                    "rightValue": "MScBADS",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 4
+                },
+                "conditions": [
+                  {
+                    "id": "eada5283-c24a-43f0-b115-728a886ee455",
+                    "leftValue": "={{ $json.name }}",
+                    "rightValue": "MBA",
+                    "operator": {
+                      "type": "string",
+                      "operation": "contains"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              }
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.5,
+      "position": [
+        320,
+        496
+      ],
+      "id": "d471ff9d-5c97-4256-b71d-ad4dabee8c33",
+      "name": "RouteByProgram"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "6630757a-91cd-49c0-a523-732f44e1c60d",
+              "name": "target_namespace",
+              "value": "={{ $json.name.includes('BScBBA') ? 'prog-bscbba' : $json.name.includes('MScGL') ? 'prog-mscgl' : ($json.name.includes('MScMGT') || $json.name.includes('MScMGT')) ? 'prog-mscmgt' : $json.name.includes('(MBA)') ? 'prog-mba' : 'prog-mscbads' }}",
+              "type": "string"
+            },
+            {
+              "id": "29b74589-96ba-48b0-8810-fadcecd8dcf1",
+              "name": "program_code",
+              "value": "={{ $json.name.includes('BScBBA') ? 'BScBBA' : $json.name.includes('MScGL') ? 'MScGL' : $json.name.includes('MScMGT') ? 'MScMGT' : $json.name.includes('MScBADS') ? 'MScBADS' : $json.name.includes('MBA') ? 'MBA' : 'Unknown' }}",
+              "type": "string"
+            },
+            {
+              "id": "3bfc5755-8cc8-42d7-8228-f1a0d3ba1896",
+              "name": "degree_level",
+              "value": "={{ $json.name.includes('BScBBA') ? 'Bachelor' : ($json.name.includes('MScMGT') || $json.name.includes('MScGL') || $json.name.includes('MScBADS')) ? 'Master' : $json.name.includes('MBA') ? 'MBA' : 'Unknown' }}",
+              "type": "string"
+            },
+            {
+              "id": "34a69f91-a9cf-4223-b139-9529f5cd8a73",
+              "name": "name",
+              "value": "={{ $json.name }}",
+              "type": "string"
+            },
+            {
+              "id": "6035da46-69db-4fa5-b569-56fe95fcf3f6",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        544,
+        544
+      ],
+      "id": "8518ac03-7918-4c6a-83ca-0629870c9096",
+      "name": "SetNameSpaceProgramTags"
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "binaryMode": "specificField",
+        "loader": "pdfLoader",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "program_code",
+                "value": "={{ $json.program_code }}"
+              },
+              {
+                "name": "=degree_level",
+                "value": "={{ $json.degree_level }}"
+              },
+              {
+                "name": "=source_doc",
+                "value": "={{ $json.name }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        1360,
+        784
+      ],
+      "id": "35ecae53-67a3-4ad6-b355-8c1c0a3f37a1",
+      "name": "DefaultDataLoader"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        1232,
+        784
+      ],
+      "id": "ceef5861-4b71-46eb-bf36-f0f133c04761",
+      "name": "EmbeddingsWithGemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ldE3iFttiwtSqS4R",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chunkSize": 900,
+        "chunkOverlap": 100,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        1472,
+        944
+      ],
+      "id": "3e46265e-5f4d-4450-aece-1ae7550d3d56",
+      "name": "TextSplitter"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://campus-recruitment-hub-3hubmfo.svc.aped-4627-b74a.pinecone.io/vectors/delete",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "pineconeApi",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"namespace\": \"{{ $json.target_namespace }}\",\n  \"filter\": {\n    \"source_doc\": {\n      \"$eq\": \"{{ $json.name }}\"\n    }\n  }\n}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        768,
+        624
+      ],
+      "id": "efc9d54e-cede-4480-aa88-56913e1185e7",
+      "name": "DeleteOldVectors",
+      "credentials": {
+        "pineconeApi": {
+          "id": "cTR26SwXlWm0m4g3",
+          "name": "Pinecone account"
+        }
+      },
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "mode": "chooseBranch"
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3.2,
+      "position": [
+        992,
+        544
+      ],
+      "id": "bfa9b285-ff7b-4f06-9cc2-ce179e63ec48",
+      "name": "WaitForDelete"
+    },
+    {
+      "parameters": {
+        "content": "## Automatic PDF Sync & Vector Database Update  ##\n\n* **Purpose:** Ingests program PDFs from Google Drive, assigns dynamic `target_namespace` and metadata (`program_code`, `degree_level`, `name`), and prevents duplicates on file updates.\n* **Delete-before-Insert:** `HTTP Request` (`POST /vectors/delete`) removes only prior chunks matching `name` in the target namespace (works across German and English updates).\n* **Sync (`Merge`):** `Mode: Choose Branch` waits for the delete branch (including error handling when a namespace or matching vectors do not exist yet) and passes the PDF binary plus metadata from **Input 1** intact.\n* **Vector Store:** Embeds and inserts chunks using `models/gemini-embedding-001` (`3072` dimensions, `cosine`) into the `campus-recruitment-hub` index (standard vector index, no document schema).",
+        "height": 960,
+        "width": 1920,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -240,
+        160
+      ],
+      "typeVersion": 1,
+      "id": "e7fea188-1819-45ec-9546-15a9b973619a",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        688,
+        1824
+      ],
+      "id": "11e3fbed-5ab7-42dc-8153-fb3333ceb975",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "ldE3iFttiwtSqS4R",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.4,
+      "position": [
+        -32,
+        1616
+      ],
+      "id": "9e0c442a-6d28-4832-9658-d558b089fc76",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "search_mscmgt",
+        "toolDescription": "Retrieves official program details for the MSc in Management (MScMGT), including Facts & Figures, tuition fees, duration, curriculum structure, and admission requirements (covers both English and German source documents).",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "campus-recruitment-hub",
+          "mode": "list",
+          "cachedResultName": "campus-recruitment-hub"
+        },
+        "topK": 5,
+        "options": {
+          "pineconeNamespace": "prog-mscmgt"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.1,
+      "position": [
+        96,
+        1616
+      ],
+      "id": "18c74668-8560-4754-ad6c-f6c43f5ae263",
+      "name": "search_mscmgt",
+      "credentials": {
+        "pineconeApi": {
+          "id": "cTR26SwXlWm0m4g3",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "search_bscbba",
+        "toolDescription": "Retrieves official program details for the BSc in Business Administration (BScBBA), including Facts & Figures, tuition fees, duration, curriculum structure, and admission requirements (covers both English and German source documents).",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "campus-recruitment-hub",
+          "mode": "list",
+          "cachedResultName": "campus-recruitment-hub"
+        },
+        "topK": 5,
+        "options": {
+          "pineconeNamespace": "prog-bscbba"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.1,
+      "position": [
+        384,
+        1616
+      ],
+      "id": "c6681353-24eb-4d69-a222-1aef829652c7",
+      "name": "search_bscbba",
+      "credentials": {
+        "pineconeApi": {
+          "id": "cTR26SwXlWm0m4g3",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "search_mscgl",
+        "toolDescription": "Retrieves official program details for the MSc in Global Logistics  (MScGL), including Facts & Figures, tuition fees, duration, curriculum structure, and admission requirements (covers both English and German source documents).",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "campus-recruitment-hub",
+          "mode": "list",
+          "cachedResultName": "campus-recruitment-hub"
+        },
+        "topK": 5,
+        "options": {
+          "pineconeNamespace": "prog-mscgl"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        1616
+      ],
+      "id": "2d4fc2a7-9e6b-4dbf-b718-b0d7ebd6d806",
+      "name": "search_mscgl",
+      "credentials": {
+        "pineconeApi": {
+          "id": "cTR26SwXlWm0m4g3",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "search_mscbads",
+        "toolDescription": "Retrieves official program details for the MSc in Business Analytics & Data Science (MScBADS), including Facts & Figures, tuition fees, duration, curriculum structure, and admission requirements (covers both English and German source documents).",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "campus-recruitment-hub",
+          "mode": "list",
+          "cachedResultName": "campus-recruitment-hub"
+        },
+        "topK": 5,
+        "options": {
+          "pineconeNamespace": "prog-mscbads"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.1,
+      "position": [
+        960,
+        1616
+      ],
+      "id": "19778201-8fbe-442b-a0a4-d8f3c6d4afc5",
+      "name": "search_mscbads",
+      "credentials": {
+        "pineconeApi": {
+          "id": "cTR26SwXlWm0m4g3",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolName": "search_mba",
+        "toolDescription": "Retrieves official program details for the MBA program, including Facts & Figures, tuition fees, duration, curriculum structure, and admission requirements (covers both English and German source documents)",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "campus-recruitment-hub",
+          "mode": "list",
+          "cachedResultName": "campus-recruitment-hub"
+        },
+        "topK": 5,
+        "options": {
+          "pineconeNamespace": "prog-mba"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.1,
+      "position": [
+        1264,
+        1616
+      ],
+      "id": "5cfd17e3-dabe-45cf-af14-9377f0e0b0f5",
+      "name": "search_mba",
+      "credentials": {
+        "pineconeApi": {
+          "id": "cTR26SwXlWm0m4g3",
+          "name": "Pinecone account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## Bilingual RAG Recruitment Agent (AI Agent) ##\n\n* **Purpose:** Answers prospective student inquiries in German or English strictly grounded in official program PDFs stored in Pinecone (`campus-recruitment-hub`).\n* **Program Routing:** Uses dedicated `Pinecone Vector Store` retrieval tools per program namespace (`prog-mscmgt`, `prog-bscbba`, `prog-mscgl`, `prog-mscbads`, `prog-mba`) with `models/gemini-embedding-001` and `Include Metadata` enabled.\n* **Memory & Guardrails:** Uses `Simple Memory` for multi-turn follow-up questions and a Markdown System Message enforcing language matching, zero hallucination, clarifying questions when the program is ambiguous, and `source_doc` citations.",
+        "height": 944,
+        "width": 1936,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -256,
+        1136
+      ],
+      "typeVersion": 1,
+      "id": "0f395443-c7db-427b-8e4c-1256e45b34ff",
+      "name": "Sticky Note1"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When chat message received": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DriveTriggerFileCreated": {
+      "main": [
+        [
+          {
+            "node": "DownloadFile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DriveTriggerFileUpdated": {
+      "main": [
+        [
+          {
+            "node": "DownloadFile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DownloadFile": {
+      "main": [
+        [
+          {
+            "node": "RouteByProgram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "RouteByProgram": {
+      "main": [
+        [
+          {
+            "node": "SetNameSpaceProgramTags",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SetNameSpaceProgramTags",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SetNameSpaceProgramTags",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SetNameSpaceProgramTags",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "SetNameSpaceProgramTags",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DefaultDataLoader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "EmbeddingsWithGemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "TextSplitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "DefaultDataLoader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SetNameSpaceProgramTags": {
+      "main": [
+        [
+          {
+            "node": "DeleteOldVectors",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "WaitForDelete",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "main": [
+        []
+      ]
+    },
+    "DeleteOldVectors": {
+      "main": [
+        [
+          {
+            "node": "WaitForDelete",
+            "type": "main",
+            "index": 1
+          }
+        ],
+        [
+          {
+            "node": "WaitForDelete",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "WaitForDelete": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "search_mscmgt",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "search_bscbba",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "search_mscgl",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "search_mscbads",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "search_mba",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_mscmgt": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_bscbba": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_mscgl": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_mscbads": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "search_mba": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "1b78fddf-021e-4d3c-8f47-12f403c4de7c",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "07dd2a48c6c6bdef6910445d81cc087ffb04a679c58cfe7cd3fd88fac36cdba5"
+  },
+  "nodeGroups": [],
+  "id": "QXQtE2r1WSXlrCbu",
+  "tags": []
+}
