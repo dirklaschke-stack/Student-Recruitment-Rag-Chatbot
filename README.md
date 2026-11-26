@@ -1,74 +1,79 @@
 # Student Recruitment RAG Chatbot
 
-An **n8n**-based **AI chat assistant** that answers prospective student questions in **German and English** using official study program PDFs stored in **Pinecone**.
+> **Zweisprachiger KI-Chat-Assistent auf Basis von n8n und Pinecone, der Fragen von Studieninteressierten auf Deutsch und Englisch verlässlich anhand offizieller Studiengangs-PDFs beantwortet.**
 
-Instead of giving generic AI answers or forcing prospective students to dig through static web pages, this project connects an AI chat agent to program-specific documents. It brings together **20+ years of experience in higher-education student recruitment and admissions** with hands-on **workflow automation, vector search, and AI tooling**.
+```mermaid
+flowchart LR
+    subgraph W1["Teil 1: Automatischer PDF-Sync"]
+        A[Google Drive<br/>Neue / aktualisierte PDF] --> B[Programm-Routing<br/>BScBBA, MScGL, MScMGT,<br/>MScBADS, MBA]
+        B --> C[Alte Vektoren löschen<br/>DeleteOldVectors]
+        C --> D[Chunking & Embeddings<br/>Gemini Embedding 001]
+        D --> E[(Pinecone Index<br/>prog-* Namespaces)]
+    end
 
-[Start chatting](https://dirklaschke.app.n8n.cloud/webhook/a3171267-791f-4b3b-b499-e03979296b9c/chat)
+    subgraph W2["Teil 2: Zweisprachiger Chat-Agent"]
+        F[Chat-Anfrage<br/>DE / EN] --> G[AI Agent + Memory<br/>10 Nachrichten]
+        G --> H[Gezielte Suche<br/>search_prog-* Tool]
+        E -.-> H
+        H --> I[Antwort mit Quellenangabe<br/>Gemini 2.5 Flash]
+    end
+```
 
-![Student Recruitment RAG Chatbot](/assets/Student_Recruitment_RAG_chatbot.png)
+*Zusammenspiel aus automatisierter Wissensbasis-Aktualisierung (Teil 1) und quellengestütztem Chat-Agenten (Teil 2).*
 
+## 1. Idee & Ausgangslage
 
----
+* **Problem / Ziel:** Studieninteressierte stellen regelmäßig detaillierte Fragen zu Studiengängen, Studiengebühren, Zulassungsvoraussetzungen, Fristen und Studieninhalten – häufig außerhalb regulärer Bürozeiten. Allgemeine KI-Modelle liefern ohne Dokumentenbezug oft ungenaue oder veraltete Antworten, während das manuelle Durchsuchen mehrerer Broschüren aufwendig ist.
+* **Warum dieses Projekt?** Ich wollte über 20 Jahre Praxiserfahrung aus Hochschulmarketing, Student Recruitment und Zulassung mit moderner Workflow-Automatisierung, Vektorsuche und KI-Agenten verbinden – mit klaren Leitplanken gegen Halluzinationen.
 
-## Why I Built This
+## 2. Lösung im Überblick
 
-Prospective students regularly ask specific questions about degree programs, tuition fees, admission requirements, deadlines, and curriculum structure—often outside regular office hours.
+Das System besteht aus zwei ineinandergreifenden **n8n-Workflows**, die Dokumente und Chat-Antworten sauber trennen:
 
-* **The Challenge:** General AI answers can be inaccurate or outdated, and searching across multiple program PDFs manually takes time.
-* **The Solution:** A two-part automation in **n8n** that automatically keeps program PDFs up to date in a vector database (**Pinecone**) and lets an **AI Agent** answer questions in the user's language based on those documents.
+1. **Automatisierte Wissensbasis (Sync-Workflow):** Sobald Programm-PDFs in Google Drive hinzugefügt oder aktualisiert werden, werden sie automatisch nach Studiengang sortiert, bereinigt und in eigene Namespaces einer **Pinecone-Vektordatenbank** geladen.
+2. **Zweisprachiger Chat-Agent (RAG-Workflow):** Ein KI-Agent greift gezielt auf den passenden Studiengangs-Namespace zu, merkt sich den Gesprächsverlauf, antwortet in der Sprache der Anfrage (Deutsch oder Englisch) und nennt am Ende das konkrete Quelldokument.
 
----
+```text
+student-recruitment-rag-chatbot/
+├── README.md                  # Projektdokumentation & Architektur-Überblick
+├── assets/                    # Workflow-Screenshots & Chat-Beispiele
+└── workflows/                 # Exportierte n8n-Workflows (.json)
+```
 
-## Step-by-Step Walkthrough: How Both Workflows Work
+## 3. Projektschritte (Ablauf der beiden Workflows)
 
-### Part 1: Automatic PDF Sync & Vector Database Update (Campus Recruitment Hub)
+### Teil 1: Automatischer PDF-Sync & Vektordatenbank-Update
 
-This workflow keeps the knowledge base current whenever new or updated program PDFs are added to Google Drive:
+1. **Ordner überwachen (`DriveTriggerFileCreated` & `DriveTriggerFileUpdated`):** Überwacht den Google-Drive-Ordner `campus-recruitment-hub` auf neue oder geänderte Studiengangs-PDFs.
+2. **PDF herunterladen (`DownloadFile`):** Lädt die betreffende Datei zur Weiterverarbeitung in den Workflow.
+3. **Studiengang erkennen (`RouteByProgram`):** Prüft den Dateinamen und ordnet das Dokument dem jeweiligen Programm zu (`BScBBA`, `MScGL`, `MScMGT`, `MScBADS`, `MBA`).
+4. **Namespace & Metadaten setzen (`SetNameSpaceProgramTags`):** Vergibt einen eigenen Pinecone-Namespace (`prog-bscbba`, `prog-mscgl`, `prog-mscmgt`, `prog-mscbads`, `prog-mba`) sowie Metadaten (`program_code`, `degree_level`, `source_doc`).
+5. **Alte Vektoren vor Neu-Indexierung löschen (`DeleteOldVectors` & `WaitForDelete`):** Entfernt in Pinecone gezielt bestehende Einträge zum gleichen `source_doc` im jeweiligen Namespace, damit bei PDF-Updates keine Dubletten entstehen.
+6. **Zerlegen, Vektorisieren & Speichern (`TextSplitter`, `EmbeddingsWithGemini`, `Pinecone Vector Store`):** Teilt den Text in Abschnitte (900 Zeichen mit 100 Zeichen Überlappung), erzeugt Embeddings mit `models/gemini-embedding-001` und speichert sie im Index `campus-recruitment-hub`.
 
-1. **Watch Google Drive Folder (`DriveTriggerFileCreated` & `DriveTriggerFileUpdated`):** Monitors a dedicated `campus-recruitment-hub` Google Drive folder for newly created or updated program PDFs.
-2. **Download the PDF (`DownloadFile`):** Downloads the file from Google Drive into the workflow.
-3. **Identify the Study Program (`RouteByProgram`):** Checks the file name to route documents for programs such as `BScBBA`, `MScGL`, `MScMGT`, `MScBADS`, and `MBA`.
-4. **Set Namespace & Metadata (`SetNameSpaceProgramTags`):** Assigns a dedicated Pinecone namespace (`prog-bscbba`, `prog-mscgl`, `prog-mscmgt`, `prog-mscbads`, `prog-mba`) along with metadata (`program_code`, `degree_level`, `source_doc`).
-5. **Remove Old Vectors Before Re-Indexing (`DeleteOldVectors` & `WaitForDelete`):** Sends a delete request to Pinecone for existing vectors matching `source_doc` in that namespace—preventing duplicate chunks when a PDF is updated—and waits safely before inserting new data.
-6. **Split, Embed & Store in Pinecone (`TextSplitter`, `DefaultDataLoader`, `EmbeddingsWithGemini`, `Pinecone Vector Store`):** Splits the PDF text into chunks (`900` characters with `100` overlap), creates embeddings with `models/gemini-embedding-001`, and stores them in the `campus-recruitment-hub` Pinecone index.
+### Teil 2: Zweisprachiger RAG-Recruitment-Agent
 
-![Automatic PDF & Sync Vector Database Update](/assets/Automatic_PDF_%20Sync_Vector%20Database_Update.png)
+1. **Chat-Nachricht empfangen (`When chat message received`):** Startet den Dialog über das n8n-Chat-Interface mit einer Begrüßung und Übersicht möglicher Themen (Fakten & Zahlen, Gebühren, Fristen, Curriculum, Zulassung).
+2. **Gesprächskontext halten (`Simple Memory`):** Speichert die letzten 10 Gesprächsschritte, sodass Rückfragen ohne Wiederholung des Studiengangs möglich sind.
+3. **Passenden Programmbereich durchsuchen (`search_bscbba`, `search_mscgl`, `search_mscmgt`, `search_mscbads`, `search_mba`):** Der Agent wählt je nach Frage das passende Such-Tool (oder mehrere für Programmvergleiche) und durchsucht den zugehörigen Pinecone-Namespace.
+4. **Belegte Antworten generieren (`OpenRouter Chat Model — google/gemini-2.5-flash`):** Antwortet auf Deutsch oder Englisch, bleibt strikt bei den abgerufenen Dokumenteninhalten, stellt bei unklarem Studiengang eine kurze Rückfrage und zitiert am Ende `source_doc`.
 
----
+## 4. Verwendete Tools & Technik
 
-### Part 2: Bilingual RAG Recruitment Agent (AI Agent)
+* **n8n:** Orchestrierung beider Workflows und des Chat-Interfaces (Chat Trigger, AI Agent, Switch, Merge, HTTP Request, Document Loader & Text Splitter).
+* **OpenRouter (`google/gemini-2.5-flash`):** Sprachmodell für dialogorientierte, zweisprachige Antworten auf Basis der abgerufenen Textpassagen.
+* **Google Gemini Embeddings (`models/gemini-embedding-001`):** Erstellung der Vektor-Repräsentationen für Dokumente und Suchanfragen.
+* **Pinecone (`campus-recruitment-hub`):** Vektordatenbank mit getrennten Namespaces je Studiengang (`prog-*`).
+* **Google Drive:** Zentrale Dokumentenablage für die Studiengangs-PDFs.
 
-This workflow handles live conversations with prospective students in German or English:
+## 5. Ergebnisse & Erkenntnisse
 
-1. **Receive User Message (`When chat message received`):** Starts the conversation via n8n's hosted chat interface with a welcome message outlining available program topics (facts & figures, tuition, deadlines, curriculum, admission requirements).
-2. **Keep Conversation Context (`Simple Memory`):** Remembers recent messages in the chat (window of `10` turns) so students can ask natural follow-up questions without repeating themselves.
-3. **Search the Right Program Namespace (`search_bscbba`, `search_mscgl`, `search_mscmgt`, `search_mscbads`, `search_mba`):** The AI Agent picks the matching retrieval tool for the requested study program (or multiple tools for comparisons) and searches the corresponding Pinecone namespace using `models/gemini-embedding-001`.
-4. **Generate Grounded Bilingual Answers (`OpenRouter Chat Model` — `google/gemini-2.5-flash`):** Replies in the same language the student uses (German or English), sticks strictly to retrieved facts, asks a quick clarifying question if the program is unclear, and cites the source document (`source_doc`) at the end.
+* **Saubere Datenaktualisierung (Idempotenz):** Durch den vorgelagerten Löschschritt (`DeleteOldVectors`) lassen sich aktualisierte Broschüren im laufenden Betrieb einspielen, ohne veraltete Textfragmente im Index mitzuschleppen.
+* **Trennung nach Studiengängen:** Eigene Namespaces pro Programm verhindern, dass Informationen (z. B. Studiengebühren oder Zulassungsregeln) zwischen Bachelor-, Master- und MBA-Programmen vermischt werden.
+* **Fachliche Leitplanken im Prompting:** Die Kombination aus strikter Quellenbindung, Quellenangabe (`source_doc`) und Rückfrage-Logik bei unklarem Studiengang macht die Antworten im Hochschulkontext deutlich verlässlicher als eine ungesteuerte KI-Suche.
 
-![Bilingual RAG Recruitment Agent (AI Agent)](/assets/Bilingual_RAG_%20Recruitment_%20Agent_AI_Agent.png)
+## 6. Nächste Schritte / Roadmap
 
----
-
-## Tools & Technologies Used
-
-* **Workflow & Chat Orchestration:** n8n (Chat Trigger, AI Agent, Switch, Merge, HTTP Request, Document Loader & Text Splitter)
-* **LLM & Embeddings:** OpenRouter (`google/gemini-2.5-flash`) & Google Gemini Embeddings (`models/gemini-embedding-001`)
-* **Vector Database:** Pinecone (`campus-recruitment-hub` index with program-specific namespaces)
-* **Source Storage:** Google Drive
-
----
-
-## Key Skills Demonstrated
-
-* **Domain-to-Workflow Translation:** Turning real student recruitment and admissions knowledge into clear rules, namespaces, and guardrails (no guessing, source citations, clarifying questions).
-* **Clean Data Updates (Idempotency):** Designing a delete-before-insert step so updated PDFs replace old chunks cleanly instead of creating duplicates.
-* **Practical RAG Architecture:** Separating data by study program (`prog-*` namespaces) and pairing conversation memory with retrieval tools.
-
----
-
-## Possible Next Steps
-
-* **CRM Handoff:** Offer interested applicants an easy way to share their contact details or book an advising call directly into a CRM (such as HubSpot).
-* **Topic & Question Tracking:** Review common student questions and missing answers to improve program brochures and FAQs.
-* **Automated Quality Checks:** Test sample German and English questions regularly after PDF updates to verify answer accuracy and citations.
+* **CRM-Übergabe:** Direkte Möglichkeit für Interessierte, Kontaktdaten zu hinterlassen oder einen Beratungstermin anzustoßen (z. B. Anbindung an HubSpot).
+* **Themen- & Lückenanalyse:** Auswertung häufig gestellter Fragen und unbeantworteter Themen, um Broschüren und FAQs gezielt zu verbessern.
+* **Automatisierte Qualitätstests:** Regelmäßige Testläufe mit deutschen und englischen Beispielfragen nach PDF-Updates zur Prüfung von Antwortqualität und Quellenangaben.
