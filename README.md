@@ -71,8 +71,7 @@ If the user's question does not clearly specify a study program, ask a brief cla
 5. **Concise & Chat-Friendly Style:**
 Keep answers brief, scannable, and directly focused on the specific question asked (aim for 80–150 words for single-program questions, unless the user explicitly asks for a full overview or multi-program comparison). Use short bullet points for key facts (fees, duration, deadlines) instead of long narrative paragraphs. Do not dump extra details from the retrieved chunks that were not asked for. At the end, offer a brief follow-up prompt (e.g., *"Would you like details on admission requirements or curriculum tracks?"*).
 
-<details>
-
+</details>
 
 ## 4. Verwendete Tools & Technik
 
